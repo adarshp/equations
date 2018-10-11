@@ -1,10 +1,17 @@
 import os
 import sys
+import subprocess
 from plasTeX.TeX import TeX
 from plasTeX.Tokenizer import BeginGroup, EndGroup
 
-# TODO write function to render paper (and possibly equation too)
-#   latexmk -outdir=output -pdf file.tex
+def render(filename, outdir='output'):
+    """render latex document"""
+    dirname = os.path.dirname(filename)
+    basename = os.path.basename(filename)
+    command = ['latexmk', '-outdir=' + outdir, '-pdf', basename]
+    returncode = subprocess.call(command, cwd=dirname)
+    pdf_name = os.path.join(dirname, outdir, os.path.splitext(basename)[0] + '.pdf')
+    return pdf_name
 
 def maybe_add_extension(filename):
     """add .tex extension if needed"""
