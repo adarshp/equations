@@ -1,6 +1,8 @@
 IMAGE=clulab/equations
 
-default: dockerize
+.PHONY: dockerize
+
+all: dockerize
 
 dockerize: Dockerfile
 	docker build -t $(IMAGE) .
