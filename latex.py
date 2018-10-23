@@ -4,7 +4,9 @@ import subprocess
 from plasTeX.TeX import TeX
 from plasTeX.Tokenizer import BeginGroup, EndGroup
 
-def render(filename, outdir='output'):
+
+
+def render_pdf(filename, outdir='output'):
     """render latex document"""
     dirname = os.path.dirname(filename)
     basename = os.path.basename(filename)
@@ -13,12 +15,16 @@ def render(filename, outdir='output'):
     pdf_name = os.path.join(dirname, outdir, os.path.splitext(basename)[0] + '.pdf')
     return pdf_name
 
+
+
 def maybe_add_extension(filename):
     """add .tex extension if needed"""
     if os.path.exists(filename):
         return filename
     elif os.path.exists(filename + '.tex'):
         return filename + '.tex'
+
+
 
 def read_group(tokens):
     """read the content of a tex group, i.e., the text surrounded by curly brackets"""
@@ -30,6 +36,8 @@ def read_group(tokens):
             break
         s += t.data
     return s
+
+
 
 def tokenize(filename):
     """read tex tokens, including imported files"""
@@ -58,6 +66,8 @@ def tokenize(filename):
                 yield token
     except StopIteration:
         pass
+
+
 
 if __name__ == '__main__':
     for t in tokenize(sys.argv[1]):
