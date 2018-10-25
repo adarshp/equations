@@ -1,19 +1,7 @@
 import os
 import sys
-import subprocess
 from plasTeX.TeX import TeX
 from plasTeX.Tokenizer import BeginGroup, EndGroup
-
-
-
-def render_pdf(filename, outdir='output'):
-    """render latex document"""
-    dirname = os.path.dirname(filename)
-    basename = os.path.basename(filename)
-    command = ['latexmk', '-outdir=' + outdir, '-pdf', basename]
-    returncode = subprocess.call(command, cwd=dirname)
-    pdf_name = os.path.join(dirname, outdir, os.path.splitext(basename)[0] + '.pdf')
-    return pdf_name
 
 
 
@@ -39,15 +27,36 @@ def read_group(tokens):
 
 
 
+def extract_equations(tokens):
+    try:
+        while True:
+            token = next(tokens)
+            if token.data == 'begin' and read_group(tokens) == 'equation':
+                toks = []
+                while True:
+                    tok = next(tokens)
+                    if tok.data == 'end' and read_group(tokens) == 'equation':
+                        # FIXME if this fails then we lost some tokens
+                        break
+                    else:
+                        toks.append(tok)
+                yield toks
+    except StopIteration:
+        pass
+
+
+
 def tokenize(filename):
     """read tex tokens, including imported files"""
+    dirname = os.path.dirname(filename)
     tex = TeX(file=filename)
     tokens = tex.itertokens()
     try:
         while True:
             token = next(tokens)
             if token.data == 'input':
-                fname = maybe_add_extension(read_group(tokens))
+                fname = os.path.join(dirname, read_group(tokens))
+                fname = maybe_add_extension(fname)
                 for t in tokenize(fname):
                     yield t
             elif token.data == 'import':
