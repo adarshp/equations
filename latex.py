@@ -17,13 +17,16 @@ def maybe_add_extension(filename):
 def read_group(tokens):
     """read the content of a tex group, i.e., the text surrounded by curly brackets"""
     s = ''
-    assert isinstance(next(tokens), BeginGroup)
+    t = next(tokens)
+    toks = [t]
+    assert isinstance(t, BeginGroup)
     while True:
         t = next(tokens)
+        toks.append(t)
         if isinstance(t, EndGroup):
             break
         s += t.data
-    return s
+    return s, toks
 
 
 
@@ -31,16 +34,20 @@ def extract_equations(tokens):
     try:
         while True:
             token = next(tokens)
-            if token.data == 'begin' and read_group(tokens) == 'equation':
-                toks = []
+            if token.data == 'begin' and read_group(tokens)[0] == 'equation':
+                equation = []
                 while True:
                     tok = next(tokens)
-                    if tok.data == 'end' and read_group(tokens) == 'equation':
-                        # FIXME if this fails then we lost some tokens
-                        break
+                    if tok.data == 'end':
+                        name, toks = read_group(tokens)
+                        if name == 'equation':
+                            break
+                        else:
+                            equation.append(tok)
+                            equation += toks
                     else:
-                        toks.append(tok)
-                yield toks
+                        equation.append(tok)
+                yield equation
     except StopIteration:
         pass
 
@@ -55,20 +62,20 @@ def tokenize(filename):
         while True:
             token = next(tokens)
             if token.data == 'input':
-                fname = os.path.join(dirname, read_group(tokens))
+                fname = os.path.join(dirname, read_group(tokens)[0])
                 fname = maybe_add_extension(fname)
                 for t in tokenize(fname):
                     yield t
             elif token.data == 'import':
                 # TODO handle \subimport, and also \import* and \subimport*
-                path = read_group(tokens)
-                name = read_group(tokens)
+                path = read_group(tokens)[0]
+                name = read_group(tokens)[0]
                 fname = maybe_add_extension(os.path.join(path, name))
                 for t in tokenize(fname):
                     yield t
             elif token.data == 'include':
                 # TODO be aware of \includeonly
-                fname = maybe_add_extension(read_group(tokens))
+                fname = maybe_add_extension(read_group(tokens)[0])
                 for t in tokenize(fname):
                     yield t
             else:
