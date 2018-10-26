@@ -78,7 +78,7 @@ if __name__ == '__main__':
     equations = extract_equations(tokens)
     pdf_name = render_tex(args.texfile)
     pages = get_pages(pdf_name)
-    template_loader = jinja2.FileSystemLoader(searchpath=".")
+    template_loader = jinja2.FileSystemLoader(searchpath='.')
     template_env = jinja2.Environment(loader=template_loader)
     template = template_env.get_template(args.template)
     for j, eq_tex in enumerate(equations):
