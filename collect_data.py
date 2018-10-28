@@ -59,20 +59,20 @@ def get_pages(pdf_name):
 
 
 def match_template(pages, template):
-    best_max_val = -np.inf
-    best_max_loc = (-1, -1)
+    best_val = -np.inf
+    best_loc = (-1, -1)
     best_page = -1
     h, w = template.shape[:2]
     for i, page in enumerate(pages):
         result = cv2.matchTemplate(page, template, cv2.TM_CCOEFF_NORMED)
-        (_, max_val, _, max_loc) = cv2.minMaxLoc(result)
-        if best_max_val < max_val:
-            best_max_val = max_val
-            best_max_loc = max_loc
+        (min_val, max_val, min_loc, max_loc) = cv2.minMaxLoc(result)
+        if best_val < max_val:
+            best_val = max_val
+            best_loc = max_loc
             best_page = i
-    upper_left = best_max_loc
-    lower_right = (best_max_loc[0] + w, best_max_loc[1] + h)
-    return best_max_val, best_page, upper_left, lower_right
+    upper_left = best_loc
+    lower_right = (best_loc[0] + w, best_loc[1] + h)
+    return best_val, best_page, upper_left, lower_right
 
 
 
