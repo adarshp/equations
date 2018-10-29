@@ -92,9 +92,9 @@ if __name__ == '__main__':
     template_loader = jinja2.FileSystemLoader(searchpath='.')
     template_env = jinja2.Environment(loader=template_loader)
     template = template_env.get_template(args.template)
-    for j, eq_toks in enumerate(equations, start=1):
+    for i, eq_toks in enumerate(equations):
         eq_tex = ''.join(repr(c) for c in eq_toks)
-        eq_name = 'equation-%03d' % j
+        eq_name = 'equation-%03d' % i
         # make pdf
         fname = os.path.join(outdir, eq_name, 'equation.tex')
         equation = render_equation(eq_tex, template, fname)
@@ -103,9 +103,9 @@ if __name__ == '__main__':
         with open(fname, 'w') as f:
             print(eq_tex, file=f)
         # find page and aabb where equation appears
-        match, i, start, end = match_template(pages, equation)
+        match, p, start, end = match_template(pages, equation)
         # write image with aabb
-        image = pages[i].copy()
+        image = pages[p].copy()
         image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
         cv2.rectangle(image, start, end, (0, 0, 255), 2)
         img_name = os.path.join(outdir, eq_name, 'aabb.png')
