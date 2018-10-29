@@ -3,6 +3,7 @@
 from __future__ import division, print_function
 
 import os
+import json
 import argparse
 import subprocess
 import cv2
@@ -98,10 +99,11 @@ if __name__ == '__main__':
         # make pdf
         fname = os.path.join(outdir, eq_name, 'equation.tex')
         equation = render_equation(eq_tex, template, fname)
-        # write tex code
-        fname = os.path.join(outdir, eq_name, 'equation-tex.txt')
+        # write tex tokens
+        fname = os.path.join(outdir, eq_name, 'tokens.json')
         with open(fname, 'w') as f:
-            print(eq_tex, file=f)
+            tokens = [dict(type=t.__class__.__name__, value=t.source) for t in eq_toks]
+            json.dump(tokens, f)
         # find page and aabb where equation appears
         match, p, start, end = match_template(pages, equation)
         # write image with aabb
