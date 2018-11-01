@@ -120,5 +120,5 @@ if __name__ == '__main__':
         x2 = end[0] / w
         y2 = end[1] / h
         with open(fname, 'w') as f:
-            print('page\tx1\ty1\tx2\ty2', file=f)
+            # print('page\tx1\ty1\tx2\ty2', file=f)
             print('%s\t%s\t%s\t%s\t%s' % (p, x1, y1, x2, y2), file=f)
