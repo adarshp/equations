@@ -34,20 +34,23 @@ def extract_equations(tokens):
     try:
         while True:
             token = next(tokens)
-            if token.data == 'begin' and read_group(tokens)[0] == 'equation':
-                equation = []
-                while True:
-                    tok = next(tokens)
-                    if tok.data == 'end':
-                        name, toks = read_group(tokens)
-                        if name == 'equation':
-                            break
+            if token.data == 'begin': #and read_group(tokens)[0] == 'equation':
+                group_name = read_group(tokens)[0]
+                if group_name in ('equation', 'equation*'):
+                    equation = []
+                    while True:
+                        t = next(tokens)
+                        if t.data == 'end':
+                            name, ts = read_group(tokens)
+                            if name == group_name:
+                                break
+                            else:
+                                equation.append(t)
+                                equation += ts
                         else:
-                            equation.append(tok)
-                            equation += toks
-                    else:
-                        equation.append(tok)
-                yield equation
+                            equation.append(t)
+                    yield equation
+            # TODO add support for other math environments
     except StopIteration:
         pass
 
