@@ -6,6 +6,7 @@ RUN apt-get -qy install texlive-full latexmk biber graphviz chktex dot2tex
 RUN apt-get -qy install imagemagick python-opencv python-plastex
 RUN apt-get -qy install python-jinja2 python-skimage poppler-utils
 RUN pip install pdf2image
-# replace imagemagick's policy with our own to enable PDF support
+
+# Replace imagemagick's policy with our own to enable PDF support
 COPY misc/policy.xml /etc/ImageMagick-6/policy.xml
 WORKDIR /data
