@@ -12,6 +12,7 @@ import numpy as np
 from skimage import img_as_ubyte
 from pdf2image import convert_from_path
 from latex import tokenize, extract_equations
+from typing import List
 
 
 
@@ -25,8 +26,8 @@ def parse_args():
 
 
 
-def render_tex(filename, outdir):
-    """render latex document"""
+def render_tex(filename: str, outdir: str) -> str:
+    """Render LaTeX document as a PDF. """
     dirname = os.path.dirname(filename)
     basename = os.path.basename(filename)
     command = ['latexmk', '-outdir=' + outdir, '-pdf', basename]
@@ -36,7 +37,7 @@ def render_tex(filename, outdir):
 
 
 
-def render_equation(equation, template, filename):
+def render_equation(equation, template, filename: str):
     dirname = os.path.dirname(filename)
     if not os.path.exists(dirname):
         os.makedirs(dirname)
@@ -49,7 +50,7 @@ def render_equation(equation, template, filename):
 
 
 
-def get_pages(pdf_name):
+def get_pages(pdf_name: str) -> List:
     pages = []
     for img in convert_from_path(pdf_name):
         page = np.array(img)
@@ -59,7 +60,7 @@ def get_pages(pdf_name):
 
 
 
-def match_template(pages, template):
+def match_template(pages: List, template):
     best_val = -np.inf
     best_loc = (-1, -1)
     best_page = -1
@@ -81,14 +82,19 @@ if __name__ == '__main__':
     args = parse_args()
     paper_id = os.path.basename(os.path.dirname(args.texfile))
     outdir = os.path.abspath(os.path.join(args.outdir, paper_id))
-    # read latex tokens from document
+
+    # Read latex tokens from document
     tokens = tokenize(args.texfile)
-    # extract equations from token stream
+
+    # Extract equations from token stream
     equations = extract_equations(tokens)
-    # compile pdf from document
+
+    # Compile PDF from document
     pdf_name = render_tex(args.texfile, outdir)
-    # retrieve pdf pages as images
+
+    # Retrieve PDF pages as images
     pages = get_pages(pdf_name)
+
     # load jinja2 template
     template_loader = jinja2.FileSystemLoader(searchpath='.')
     template_env = jinja2.Environment(loader=template_loader)
@@ -96,23 +102,29 @@ if __name__ == '__main__':
     for i, eq_toks in enumerate(equations):
         eq_tex = ''.join(repr(c) for c in eq_toks)
         eq_name = 'equation-%03d' % i
-        # make pdf
+
+        # Make PDF
         fname = os.path.join(outdir, eq_name, 'equation.tex')
         equation = render_equation(eq_tex, template, fname)
-        # write tex tokens
+
+        # Write TeX tokens
         fname = os.path.join(outdir, eq_name, 'tokens.json')
+
         with open(fname, 'w') as f:
             tokens = [dict(type=t.__class__.__name__, value=t.source) for t in eq_toks]
             json.dump(tokens, f)
-        # find page and aabb where equation appears
+
+        # Find page and aabb where equation appears
         match, p, start, end = match_template(pages, equation)
-        # write image with aabb
+
+        # Write image with aabb
         image = pages[p].copy()
         image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
         cv2.rectangle(image, start, end, (0, 0, 255), 2)
         img_name = os.path.join(outdir, eq_name, 'aabb.png')
         cv2.imwrite(img_name, image)
-        # write aabb to file (using relative coordinates)
+
+        # Write aabb to file (using relative coordinates)
         fname = os.path.join(outdir, eq_name, 'aabb.tsv')
         h, w = image.shape[:2]
         x1 = start[0] / w
@@ -120,5 +132,4 @@ if __name__ == '__main__':
         x2 = end[0] / w
         y2 = end[1] / h
         with open(fname, 'w') as f:
-            # print('page\tx1\ty1\tx2\ty2', file=f)
-            print('%s\t%s\t%s\t%s\t%s' % (p, x1, y1, x2, y2), file=f)
+            print(f"{'\t'.join((p, x1, y1, x2, y2))}", file=f)
