@@ -5,8 +5,8 @@ from plasTeX.Tokenizer import BeginGroup, EndGroup
 
 
 
-def maybe_add_extension(filename):
-    """add .tex extension if needed"""
+def maybe_add_extension(filename: str):
+    """ Add .tex extension to a filename if needed. """
     if os.path.exists(filename):
         return filename
     elif os.path.exists(filename + '.tex'):
@@ -15,7 +15,7 @@ def maybe_add_extension(filename):
 
 
 def read_group(tokens):
-    """read the content of a tex group, i.e., the text surrounded by curly brackets"""
+    """ Read the content of a TeX group, i.e., the text surrounded by curly brackets. """
     s = ''
     t = next(tokens)
     toks = [t]
@@ -53,8 +53,8 @@ def extract_equations(tokens):
 
 
 
-def tokenize(filename):
-    """read tex tokens, including imported files"""
+def tokenize(filename: str):
+    """ Read tex tokens, including imported files. """
     dirname = os.path.dirname(filename)
     tex = TeX(file=filename)
     tokens = tex.itertokens()
@@ -87,4 +87,4 @@ def tokenize(filename):
 
 if __name__ == '__main__':
     for t in tokenize(sys.argv[1]):
-        print type(t), repr(t)
+        print(type(t), repr(t))
