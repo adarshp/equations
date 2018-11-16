@@ -31,16 +31,17 @@ def read_group(tokens):
 
 
 def extract_equations(tokens):
+    equation_environments = ["equation", "equation*", "align", "align*"]
     try:
         while True:
             token = next(tokens)
-            if token.data == 'begin' and read_group(tokens)[0] == 'equation':
+            if token.data == 'begin' and read_group(tokens)[0] in equation_environments:
                 equation = []
                 while True:
                     tok = next(tokens)
                     if tok.data == 'end':
                         name, toks = read_group(tokens)
-                        if name == 'equation':
+                        if name in equation_environments:
                             break
                         else:
                             equation.append(tok)
@@ -54,7 +55,7 @@ def extract_equations(tokens):
 
 
 def tokenize(filename: str):
-    """ Read tex tokens, including imported files. """
+    """ Read TeX tokens, including imported files. """
     dirname = os.path.dirname(filename)
     tex = TeX(file=filename)
     tokens = tex.itertokens()
